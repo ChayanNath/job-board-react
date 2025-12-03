@@ -1,17 +1,22 @@
 import { mockJobs } from "@/mockData/mock-jobs";
-import { JobCard } from "./JobCard";
 import { JobFilters } from "./JobFilters";
 import { useMemo, useState } from "react";
-import type { JobStatus } from "@/types/job";
+import type { Job, JobStatus } from "@/types/job";
 import { useDebounce } from "@/hooks/useDebounce";
+import { JobList } from "./JobList";
+import { Button } from "@/components/ui/button";
+import { AddJobForm, type AddJobFormValues } from "../forms/AddJobForm";
 
 export const JobDashboard = () => {
   const [jobStatus, setJobStatus] = useState<JobStatus>("all");
   const [searchTerm, setSearchTerm] = useState("");
+  const [showForm, setShowForm] = useState(false);
+  const [jobs, setJobs] = useState<Job[]>(mockJobs);
 
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
-  const filteredResult = useMemo(() => {
-    return mockJobs
+
+  const filteredJobList = useMemo(() => {
+    return jobs
       .filter((job) => jobStatus === "all" || job.status === jobStatus)
       .filter((job) => {
         const q = debouncedSearchTerm.toLowerCase();
@@ -20,7 +25,20 @@ export const JobDashboard = () => {
           job.role.toLowerCase().includes(q)
         );
       });
-  }, [jobStatus, debouncedSearchTerm]);
+  }, [jobs, jobStatus, debouncedSearchTerm]);
+
+  const handleAddJob = (values: AddJobFormValues) => {
+    const newJob: Job = {
+      id: crypto.randomUUID(),
+      company: values.company,
+      role: values.role,
+      status: values.status,
+      description: values.description,
+      appliedOn: values.appliedOn.toISOString(),
+    };
+
+    setJobs((prev) => [newJob, ...prev]);
+  };
 
   return (
     <section className="p-4">
@@ -35,23 +53,15 @@ export const JobDashboard = () => {
           onSearchChange={setSearchTerm}
         />
         <span className="text-sm text-muted-foreground">
-          {mockJobs.length} total
+          {mockJobs.length} total jobs
         </span>
+        <Button onClick={() => setShowForm((prev) => !prev)}>
+          {showForm ? "Close" : "Add Job"}
+        </Button>
       </div>
 
-      <div className="min-h-[200px]">
-        {filteredResult.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No jobs found.</p>
-        ) : (
-          <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {filteredResult.map((job) => (
-              <li key={job.id}>
-                <JobCard job={job} />
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
+      {showForm && <AddJobForm onSubmit={handleAddJob} />}
+      <JobList filteredJobList={filteredJobList} />
     </section>
   );
 };
