@@ -53,14 +53,18 @@ const addJobFormSchema = z.object({
   appliedOn: z.date(),
 });
 
-export type AddJobFormValues = z.infer<typeof addJobFormSchema>;
+type JobFormMode = "create" | "edit";
 
-type AddJobFormProps = {
-  onSubmit: (values: AddJobFormValues) => void;
+export type JobFormValues = z.infer<typeof addJobFormSchema>;
+
+type JobFormProps = {
+  mode: JobFormMode;
+  onSubmit: (values: JobFormValues) => void;
+  initialValues?: Partial<JobFormValues>;
 };
 
-export const AddJobForm = ({ onSubmit }: AddJobFormProps) => {
-  const form = useForm<AddJobFormValues>({
+export const JobForm = ({ mode, onSubmit, initialValues }: JobFormProps) => {
+  const form = useForm<JobFormValues>({
     resolver: zodResolver(addJobFormSchema),
     defaultValues: {
       company: "",
@@ -68,6 +72,7 @@ export const AddJobForm = ({ onSubmit }: AddJobFormProps) => {
       description: "",
       status: "applied",
       appliedOn: new Date(),
+      ...initialValues,
     },
   });
 

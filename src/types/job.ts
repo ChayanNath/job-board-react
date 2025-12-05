@@ -9,7 +9,7 @@ export interface Job {
   id: string;
   company: string;
   role: string;
-  status: JobStatus;
+  status: "applied" | "interviewing" | "offer" | "rejected";
   appliedOn: string;
   description: string;
 }

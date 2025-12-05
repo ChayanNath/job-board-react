@@ -6,17 +6,20 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import type { Job } from "@/types/job";
+import { Edit } from "lucide-react";
 
 interface JobCardProps {
   job: Job;
+  editHandler: (job: Job) => void;
 }
 
-export const JobCard = ({ job }: JobCardProps) => {
+export const JobCard = ({ job, editHandler }: JobCardProps) => {
   return (
     <Card>
       <CardHeader>
         <CardTitle>{job.company}</CardTitle>
         <CardDescription>{job.description}</CardDescription>
+        <Edit onClick={() => editHandler(job)} />
       </CardHeader>
       <CardContent>
         <div>Role: {job.role}</div>

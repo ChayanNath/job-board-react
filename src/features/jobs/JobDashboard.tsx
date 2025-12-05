@@ -5,15 +5,21 @@ import type { Job, JobStatus } from "@/types/job";
 import { useDebounce } from "@/hooks/useDebounce";
 import { JobList } from "./JobList";
 import { Button } from "@/components/ui/button";
-import { AddJobForm, type AddJobFormValues } from "../forms/AddJobForm";
+import { JobForm, type JobFormValues } from "../forms/JobForm";
 
 export const JobDashboard = () => {
   const [jobStatus, setJobStatus] = useState<JobStatus>("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [showForm, setShowForm] = useState(false);
   const [jobs, setJobs] = useState<Job[]>(mockJobs);
+  const [editingJob, setEditingJob] = useState<Job>();
 
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
+
+  const handleEditClick = (job: Job) => {
+    setEditingJob(job);
+    setShowForm(true);
+  };
 
   const filteredJobList = useMemo(() => {
     return jobs
@@ -27,7 +33,7 @@ export const JobDashboard = () => {
       });
   }, [jobs, jobStatus, debouncedSearchTerm]);
 
-  const handleAddJob = (values: AddJobFormValues) => {
+  const handleAddJob = (values: JobFormValues) => {
     const newJob: Job = {
       id: crypto.randomUUID(),
       company: values.company,
@@ -38,6 +44,26 @@ export const JobDashboard = () => {
     };
 
     setJobs((prev) => [newJob, ...prev]);
+    setShowForm(false);
+  };
+
+  const handleUpdateJob = (values: JobFormValues) => {
+    if (!editingJob) return;
+
+    setJobs((prev) =>
+      prev.map((job) =>
+        job.id === editingJob.id
+          ? {
+              ...job,
+              company: values.company,
+              role: values.role,
+              status: values.status,
+              description: values.description,
+              appliedOn: values.appliedOn.toISOString(),
+            }
+          : job
+      )
+    );
   };
 
   return (
@@ -60,8 +86,27 @@ export const JobDashboard = () => {
         </Button>
       </div>
 
-      {showForm && <AddJobForm onSubmit={handleAddJob} />}
-      <JobList filteredJobList={filteredJobList} />
+      {showForm && (
+        <JobForm
+          mode={editingJob ? "edit" : "create"}
+          initialValues={
+            editingJob
+              ? {
+                  company: editingJob.company,
+                  role: editingJob.role,
+                  description: editingJob.description,
+                  status: editingJob.status,
+                  appliedOn: new Date(editingJob.appliedOn),
+                }
+              : undefined
+          }
+          onSubmit={editingJob ? handleAddJob : handleUpdateJob}
+        />
+      )}
+      <JobList
+        filteredJobList={filteredJobList}
+        editHandler={handleEditClick}
+      />
     </section>
   );
 };
