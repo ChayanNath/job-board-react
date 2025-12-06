@@ -1,22 +1,18 @@
 import { JobFilters } from "./JobFilters";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import type { Job, JobStatus } from "@/types/job";
 import { useDebounce } from "@/hooks/useDebounce";
 import { JobList } from "./JobList";
 import { Button } from "@/components/ui/button";
 import { JobForm, type JobFormValues } from "../forms/JobForm";
-import axios from "axios";
 import { toast } from "sonner";
-
-const API_PATH = "http://localhost:3000/api/v1/jobs";
+import { useJob } from "@/hooks/useJobs";
 
 export const JobDashboard = () => {
   const [jobStatus, setJobStatus] = useState<JobStatus>("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [showForm, setShowForm] = useState(false);
-  const [jobs, setJobs] = useState<Job[]>([]);
-  const [editingJob, setEditingJob] = useState<Job | null>();
-  const [loading, setLoading] = useState(false);
+  const [editingJob, setEditingJob] = useState<Job | null>(null);
 
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
@@ -25,16 +21,7 @@ export const JobDashboard = () => {
     setShowForm(true);
   };
 
-  useEffect(() => {
-    const fetchJobs = async () => {
-      setLoading(true);
-      const response = await axios.get(API_PATH);
-      const responseData = response?.data?.jobs;
-      setJobs(responseData);
-      setLoading(false);
-    };
-    fetchJobs();
-  }, []);
+  const { jobs, loading, error, addJob, updateJob, deleteJob } = useJob();
 
   const filteredJobList = useMemo(() => {
     return jobs
@@ -49,53 +36,38 @@ export const JobDashboard = () => {
   }, [jobs, jobStatus, debouncedSearchTerm]);
 
   const handleAddJob = async (values: JobFormValues) => {
-    const newJob = {
-      company: values.company,
-      role: values.role,
-      status: values.status,
-      description: values.description,
-      appliedOn: values.appliedOn.toISOString(),
-    };
-
     try {
-      const response = await axios.post(API_PATH, newJob);
-      const editResponse = response.data.job;
-      setJobs((prev) => [editResponse, ...prev]);
-      toast(editResponse.message);
-    } catch (error) {
-      console.error(error);
-      toast("Failed to add job! Please try again later.");
+      await addJob(values);
+      toast("Job added successfully");
+      setShowForm(false);
+    } catch {
+      toast("Failed to add job");
     }
-
-    setShowForm(false);
   };
 
   const handleUpdateJob = async (values: JobFormValues) => {
-    if (!editingJob) return;
     try {
-      const payload = {
-        company: values.company,
-        role: values.role,
-        status: values.status,
-        description: values.description,
-        appliedOn: values.appliedOn.toISOString(),
-      };
-      const response = await axios.patch(
-        `${API_PATH}/${editingJob.id}`,
-        payload
-      );
-      const { message, job } = response.data;
-      setJobs((prev) => prev.map((j) => (j.id === editingJob.id ? job : j)));
-      toast(message);
+      if (!editingJob?.id) return;
+      await updateJob(editingJob?.id, values);
+      toast("Job updated successfully");
       setEditingJob(null);
       setShowForm(false);
-    } catch (error) {
-      console.error(error);
-      toast("Failed to add job! Please try again later.");
+    } catch {
+      toast("Failed to updated job");
     }
   };
 
-  if (loading) {
+  const handleDeleteJob = async (id: string) => {
+    try {
+      if (!id) return;
+      await deleteJob(id);
+      toast("Job deleted successfully");
+    } catch {
+      toast("Failed to remove job");
+    }
+  };
+
+  if (loading && jobs.length === 0) {
     return <div>Loading...</div>;
   }
 
@@ -114,7 +86,14 @@ export const JobDashboard = () => {
         <span className="text-sm text-muted-foreground">
           {jobs?.length} total jobs
         </span>
-        <Button onClick={() => setShowForm((prev) => !prev)}>
+        <Button
+          onClick={() => {
+            setShowForm((prev) => !prev);
+            if (showForm) {
+              setEditingJob(null);
+            }
+          }}
+        >
           {showForm ? "Close" : "Add Job"}
         </Button>
       </div>

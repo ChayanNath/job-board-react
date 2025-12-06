@@ -1,7 +1,7 @@
 import type { JobFormValues } from "@/features/forms/JobForm";
 import type { Job } from "@/types/job";
 import axios from "axios";
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 const API_PATH = "http://localhost:3000/api/v1/jobs";
 
@@ -20,7 +20,7 @@ export const useJob = (): UseJobResult => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchJobs = async () => {
+  const fetchJobs = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -33,9 +33,13 @@ export const useJob = (): UseJobResult => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const addJob = async (values: JobFormValues) => {
+  useEffect(() => {
+    void fetchJobs();
+  }, [fetchJobs]);
+
+  const addJob = useCallback(async (values: JobFormValues) => {
     try {
       setLoading(true);
       setError(null);
@@ -49,16 +53,16 @@ export const useJob = (): UseJobResult => {
       const response = await axios.post(API_PATH, newJob);
       const editResponse = response.data.job;
       setJobs((prev) => [editResponse, ...prev]);
-    } catch (error) {
-      console.error(error);
+    } catch (err) {
+      console.error(err);
       setError("Failed to add a new job");
+      throw err;
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const updateJob = async (id: string, values: JobFormValues) => {
-    if (!id) return;
+  const updateJob = useCallback(async (id: string, values: JobFormValues) => {
     try {
       setLoading(true);
       setError(null);
@@ -70,30 +74,32 @@ export const useJob = (): UseJobResult => {
         appliedOn: values.appliedOn.toISOString(),
       };
       const response = await axios.patch(`${API_PATH}/${id}`, payload);
-      const { message, job } = response.data;
+      const { job } = response.data;
       setJobs((prev) => prev.map((j) => (j.id === id ? job : j)));
-    } catch (error) {
-      console.error(error);
+    } catch (err) {
+      console.error(err);
       setError("Failed while updating job");
+      throw err;
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const deleteJob = async (id: string) => {
+  const deleteJob = useCallback(async (id: string) => {
     if (!id) return;
     try {
       setLoading(true);
       setError(null);
       await axios.delete(`${API_PATH}/${id}`);
       setJobs((prev) => prev.filter((job) => job.id !== id));
-    } catch {
-      console.error(error);
+    } catch (err) {
+      console.error(err);
       setError("Failed while deleting job");
+      throw err;
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   return {
     jobs,
