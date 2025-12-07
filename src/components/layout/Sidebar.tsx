@@ -1,10 +1,13 @@
+import { useNavigate } from "react-router-dom";
+
 const navItems = [
-  { label: "Dashboard" },
-  { label: "Jobs" },
-  { label: "Settings" },
+  { label: "Dashboard", path: "/" },
+  { label: "Jobs", path: "/jobs" },
+  { label: "Settings", path: "/settings" },
 ];
 
 export const Sidebar = () => {
+  const navigate = useNavigate();
   return (
     <aside aria-label="Sidebar" className="w-100">
       <div className="mb-6 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
@@ -17,6 +20,7 @@ export const Sidebar = () => {
             <li
               key={item.label}
               className="rounded-md px-3 py-2 text-muted-foreground hover:bg-muted hover:text-foreground cursor-pointer"
+              onClick={() => navigate(item.path)}
             >
               {item.label}
             </li>
