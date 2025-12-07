@@ -6,20 +6,26 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import type { Job } from "@/types/job";
-import { Edit } from "lucide-react";
+import { Edit, Trash } from "lucide-react";
 
 interface JobCardProps {
   job: Job;
   editHandler: (job: Job) => void;
+  deleteHandler: (jobId: string) => void;
 }
 
-export const JobCard = ({ job, editHandler }: JobCardProps) => {
+export const JobCard = ({ job, editHandler, deleteHandler }: JobCardProps) => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{job.company}</CardTitle>
+        <CardTitle className="flex justify-between">
+          {job.company}
+          <div className="flex gap-2">
+            <Edit onClick={() => editHandler(job)} />{" "}
+            <Trash onClick={() => deleteHandler(job.id)} />
+          </div>
+        </CardTitle>
         <CardDescription>{job.description}</CardDescription>
-        <Edit onClick={() => editHandler(job)} />
       </CardHeader>
       <CardContent>
         <div>Role: {job.role}</div>

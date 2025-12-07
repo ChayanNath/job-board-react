@@ -4,9 +4,14 @@ import { JobCard } from "./JobCard";
 interface JobListProps {
   filteredJobList: Job[];
   editHandler: (job: Job) => void;
+  deleteHandler: (jobId: string) => void;
 }
 
-export const JobList = ({ filteredJobList, editHandler }: JobListProps) => {
+export const JobList = ({
+  filteredJobList,
+  editHandler,
+  deleteHandler,
+}: JobListProps) => {
   return (
     <div className="min-h-[200px]">
       {filteredJobList.length === 0 ? (
@@ -15,7 +20,11 @@ export const JobList = ({ filteredJobList, editHandler }: JobListProps) => {
         <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {filteredJobList.map((job) => (
             <li key={job.id}>
-              <JobCard editHandler={editHandler} job={job} />
+              <JobCard
+                editHandler={editHandler}
+                deleteHandler={deleteHandler}
+                job={job}
+              />
             </li>
           ))}
         </ul>

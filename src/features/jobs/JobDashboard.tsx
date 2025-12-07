@@ -6,7 +6,7 @@ import { JobList } from "./JobList";
 import { Button } from "@/components/ui/button";
 import { JobForm, type JobFormValues } from "../forms/JobForm";
 import { toast } from "sonner";
-import { useJob } from "@/hooks/useJobs";
+import { useJobsContext } from "@/context/JobsContext";
 
 export const JobDashboard = () => {
   const [jobStatus, setJobStatus] = useState<JobStatus>("all");
@@ -21,7 +21,7 @@ export const JobDashboard = () => {
     setShowForm(true);
   };
 
-  const { jobs, loading, error, addJob, updateJob, deleteJob } = useJob();
+  const { jobs, loading, addJob, updateJob, deleteJob } = useJobsContext();
 
   const filteredJobList = useMemo(() => {
     return jobs
@@ -118,6 +118,7 @@ export const JobDashboard = () => {
       <JobList
         filteredJobList={filteredJobList}
         editHandler={handleEditClick}
+        deleteHandler={handleDeleteJob}
       />
     </section>
   );
