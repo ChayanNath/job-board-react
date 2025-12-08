@@ -7,6 +7,7 @@ import {
 } from "@/components/ui/card";
 import type { Job } from "@/types/job";
 import { Edit, Trash } from "lucide-react";
+import { useNavigate } from "react-router";
 
 interface JobCardProps {
   job: Job;
@@ -15,8 +16,9 @@ interface JobCardProps {
 }
 
 export const JobCard = ({ job, editHandler, deleteHandler }: JobCardProps) => {
+  const navigate = useNavigate();
   return (
-    <Card>
+    <Card onClick={() => navigate(`/job/${job.id}`)}>
       <CardHeader>
         <CardTitle className="flex justify-between">
           {job.company}

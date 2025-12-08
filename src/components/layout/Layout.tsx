@@ -1,12 +1,8 @@
-import type React from "react";
+import { Outlet } from "react-router";
 import { Header } from "./Header";
 import { Sidebar } from "./Sidebar";
 
-interface LayoutProps {
-  children: React.ReactNode;
-}
-
-export const Layout: React.FC<LayoutProps> = ({ children }) => {
+export const Layout = () => {
   return (
     <div className="flex h-screen w-screen overflow-hidden">
       <div className="flex h-full w-28 shrink-0 border-r border-border bg-card">
@@ -20,7 +16,9 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           <Header />
         </div>
 
-        <main className="flex-1 overflow-y-auto p-4">{children}</main>
+        <main className="flex-1 overflow-y-auto p-4">
+          <Outlet />
+        </main>
       </div>
     </div>
   );

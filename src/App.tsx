@@ -5,23 +5,26 @@ import { JobDashboard } from "./features/jobs/JobDashboard";
 import { Toaster } from "@/components/ui/sonner";
 import { createBrowserRouter, RouterProvider } from "react-router";
 import { SettingsLanding } from "./features/settings/SettingsLanding";
+import { JobDetails } from "./features/jobs/JobDetails";
 
 const router = createBrowserRouter([
   {
     path: "/",
-    element: (
-      <Layout>
-        <JobDashboard />
-      </Layout>
-    ),
-  },
-  {
-    path: "/settings",
-    element: (
-      <Layout>
-        <SettingsLanding />
-      </Layout>
-    ),
+    element: <Layout />,
+    children: [
+      {
+        index: true,
+        element: <JobDashboard />,
+      },
+      {
+        path: "job/:id",
+        element: <JobDetails />,
+      },
+      {
+        path: "settings",
+        element: <SettingsLanding />,
+      },
+    ],
   },
 ]);
 
