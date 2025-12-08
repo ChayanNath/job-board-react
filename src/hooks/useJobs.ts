@@ -3,7 +3,7 @@ import type { Job } from "@/types/job";
 import axios from "axios";
 import { useCallback, useEffect, useState } from "react";
 
-const API_PATH = "http://localhost:3000/api/v1/jobs";
+export const API_PATH = "http://localhost:3000/api/v1/jobs";
 
 type UseJobResult = {
   jobs: Job[];
